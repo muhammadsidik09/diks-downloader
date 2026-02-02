@@ -1,111 +1,41 @@
-body {
-  font-family: 'Roboto', sans-serif;
-  background: #e8f5e9;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-}
+async function downloadVideo() {
+  const url = document.getElementById('videoUrl').value.trim();
+  const quality = document.querySelector('input[name="quality"]:checked').value;
+  const resultDiv = document.getElementById('result');
 
-.container {
-  background: #ffffff;
-  padding: 30px 25px;
-  border-radius: 15px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  max-width: 500px;
-  width: 90%;
-  text-align: center;
-}
+  if (!url) {
+    resultDiv.innerHTML = '<p style="color:red;">Masukkan URL terlebih dahulu!</p>';
+    return;
+  }
 
-h1 {
-  color: #2e7d32;
-  margin-bottom: 10px;
-}
+  resultDiv.innerHTML = '<p>Memproses...</p>';
 
-.subtitle {
-  color: #4caf50;
-  margin-bottom: 20px;
-  font-weight: 500;
-}
+  let apiUrl = '';
+  // Kita gunakan API gratis pihak ketiga (contoh open API)
+  if (url.includes('tiktok.com')) {
+    apiUrl = `https://api.tiktokdownloaderapi.com/download?url=${encodeURIComponent(url)}&quality=${quality}`;
+  } else if (url.includes('instagram.com/reel')) {
+    apiUrl = `https://api.instagrambulkdownload.com/reel?url=${encodeURIComponent(url)}&quality=${quality}`;
+  } else if (url.includes('facebook.com')) {
+    apiUrl = `https://api.fbdownloader.com/download?url=${encodeURIComponent(url)}&quality=${quality}`;
+  } else if (url.includes('youtube.com/shorts') || url.includes('youtube.com/watch')) {
+    apiUrl = `https://api.youtubedownloader.com/download?url=${encodeURIComponent(url)}&quality=${quality}`;
+  } else {
+    resultDiv.innerHTML = '<p style="color:red;">Platform tidak didukung</p>';
+    return;
+  }
 
-.social-logos {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 20px;
-}
+  try {
+    const response = await fetch(apiUrl);
+    const data = await response.json();
 
-.social-logos img {
-  width: 40px;
-  height: 40px;
-}
-
-input {
-  width: 100%;
-  padding: 15px;
-  border: 2px solid #c8e6c9;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  font-size: 1rem;
-  transition: border 0.3s;
-}
-
-input:focus {
-  outline: none;
-  border-color: #2e7d32;
-}
-
-.quality-options {
-  margin-bottom: 20px;
-}
-
-.quality-options label {
-  margin-right: 15px;
-  font-weight: 500;
-}
-
-button {
-  width: 100%;
-  padding: 15px;
-  font-size: 1.1rem;
-  background: #2e7d32;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: bold;
-}
-
-button:hover {
-  background: #1b5e20;
-  transform: scale(1.03);
-}
-
-#result {
-  margin-top: 20px;
-}
-
-#result a {
-  display: inline-block;
-  padding: 12px 20px;
-  background: #4caf50;
-  color: white;
-  border-radius: 10px;
-  text-decoration: none;
-  font-weight: 500;
-  transition: 0.3s;
-}
-
-#result a:hover {
-  background: #2e7d32;
-  transform: scale(1.05);
-}
-
-.note {
-  font-size: 0.8rem;
-  color: gray;
-  margin-top: 15px;
-}
+    if (data && data.download_url) {
+      resultDiv.innerHTML = `<a href="${data.download_url}" target="_blank">Klik di sini untuk mengunduh video (${quality.toUpperCase()})</a>`;
+    } else {
+      resultDiv.innerHTML = '<p style="color:red;">Gagal mengambil video. Coba lagi.</p>';
+    }
+  } catch (err) {
+    console.error(err);
+    resultDiv.innerHTML = '<p style="color:red;">Terjadi kesalahan saat menghubungkan API</p>';
+  }
+      }
